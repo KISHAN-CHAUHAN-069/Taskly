@@ -11,7 +11,15 @@ async function main() {
     return;
   }
 
-  // 2. Create the board
+  // 2. Create the board (clear existing Beta Testing Release board first to prevent duplicates)
+  const existingBoard = await prisma.board.findFirst({
+    where: { name: 'Beta Testing Release' }
+  });
+  if (existingBoard) {
+    await prisma.board.delete({ where: { id: existingBoard.id } });
+    console.log("Deleted existing 'Beta Testing Release' board to avoid duplicates.");
+  }
+
   const board = await prisma.board.create({
     data: {
       name: 'Beta Testing Release',

@@ -4,6 +4,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
+  // Clear existing boards, columns, and tasks to prevent duplicates on rerun
+  await prisma.task.deleteMany();
+  await prisma.column.deleteMany();
+  await prisma.board.deleteMany();
+
   // 1. Create Mock Users
   const usersData = [
     {
