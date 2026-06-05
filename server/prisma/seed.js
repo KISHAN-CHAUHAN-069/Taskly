@@ -75,54 +75,59 @@ async function main() {
   }
   console.log(`Seeded ${seededColumns.length} columns.`);
 
-  // 4. Create Sample Tasks
-  const backlogCol = seededColumns[0];
-  const todoCol = seededColumns[1];
-  const inProgressCol = seededColumns[2];
+  // 4. Create Sample Tasks (4 tasks per column)
+  const taskTemplates = {
+    'Backlog': [
+      { title: 'Define SaaS pricing tiers', description: 'Configure tier models (free, basic, pro) and user boundaries.', priority: 'LOW' },
+      { title: 'Competitor benchmark analysis', description: 'Map out pricing structures and major feature sets of competitors.', priority: 'MEDIUM' },
+      { title: 'Draft investor presentation deck', description: 'Compile product milestones, target market sizes, and budget sheets.', priority: 'LOW' },
+      { title: 'Design brand typography rules', description: 'Select logo colors, heading families, and component weights.', priority: 'LOW' }
+    ],
+    'To Do': [
+      { title: 'Design Database Schema', description: 'Design database tables for Board, Column, Task, and User including positions for lists.', priority: 'HIGH' },
+      { title: 'Implement Move Endpoint', description: 'Write the transaction and algorithmic reordering endpoint for task moving between columns.', priority: 'URGENT' },
+      { title: 'Draft API authorization design', description: 'Prepare structure diagrams mapping auth middleware tokens to routing controllers.', priority: 'MEDIUM' },
+      { title: 'Setup error monitoring integration', description: 'Evaluate Sentry or LogRocket to capture client-side run crashes.', priority: 'LOW' }
+    ],
+    'In Progress': [
+      { title: 'Setup Socket.io Rooms', description: 'Enable real-time communication by setting up socket rooms for each individual board.', priority: 'MEDIUM' },
+      { title: 'Refactor custom React sidebar', description: 'Clean up styling files and implement custom collapse toggles.', priority: 'MEDIUM' },
+      { title: 'Optimize SQLite database queries', description: 'Bench performance speeds and ensure proper SQLite indexes exist.', priority: 'HIGH' },
+      { title: 'Configure Vite API proxy routes', description: 'Point local client calls seamlessly to the Express server.', priority: 'LOW' }
+    ],
+    'In Review': [
+      { title: 'Setup ESLint configurations', description: 'Establish static check boundaries and enforce strict syntax rules.', priority: 'LOW' },
+      { title: 'Verify drag-and-drop mechanics', description: 'Check DND sensor distance thresholds and drop indicator outlines.', priority: 'HIGH' },
+      { title: 'Audit package security issues', description: 'Run npm audit checks and verify dependency updates.', priority: 'MEDIUM' },
+      { title: 'Document local environment scripts', description: 'Detail running commands, seeds, and db resets in Markdown.', priority: 'LOW' }
+    ],
+    'Done': [
+      { title: 'Initialize React Vite project', description: 'Build file directories, setup boilerplate, and install packages.', priority: 'LOW' },
+      { title: 'Install server dependencies', description: 'Download Express, Prisma Client, and Socket.io packages.', priority: 'LOW' },
+      { title: 'Establish global CSS theme layout', description: 'Declare Outfit font imports and custom CSS HSL color tokens.', priority: 'MEDIUM' },
+      { title: 'Create database migration files', description: 'Execute initial migration scripts to build tables.', priority: 'HIGH' }
+    ]
+  };
 
-  const tasksData = [
-    {
-      title: 'Design Database Schema',
-      description: 'Design database tables for Board, Column, Task, and User including positions for lists.',
-      position: 0,
-      priority: 'HIGH',
-      columnId: todoCol.id,
-      assigneeId: seededUsers[0].id, // Sarah
-      dueDate: new Date(Date.now() + 86400000 * 2) // 2 days from now
-    },
-    {
-      title: 'Implement Move Endpoint',
-      description: 'Write the transaction and algorithmic reordering endpoint for task moving between columns.',
-      position: 1,
-      priority: 'URGENT',
-      columnId: todoCol.id,
-      assigneeId: seededUsers[1].id, // John
-      dueDate: new Date(Date.now() + 86400000 * 3) // 3 days from now
-    },
-    {
-      title: 'Setup Socket.io Rooms',
-      description: 'Enable real-time communication by setting up socket rooms for each individual board.',
-      position: 0,
-      priority: 'MEDIUM',
-      columnId: inProgressCol.id,
-      assigneeId: seededUsers[2].id, // Alex
-      dueDate: new Date(Date.now() + 86400000 * 5)
-    },
-    {
-      title: 'Vite & React Boilerplate',
-      description: 'Initialize a clean React application utilizing Vite and vanilla styling custom variables.',
-      position: 0,
-      priority: 'LOW',
-      columnId: backlogCol.id,
-      assigneeId: seededUsers[3].id, // Emily
-      dueDate: new Date(Date.now() - 86400000) // 1 day ago (Overdue)
+  for (const col of seededColumns) {
+    const templates = taskTemplates[col.name] || [];
+    console.log(`Adding 4 tasks to column: ${col.name}...`);
+    for (let i = 0; i < templates.length; i++) {
+      const template = templates[i];
+      const assignee = seededUsers[i % seededUsers.length];
+
+      await prisma.task.create({
+        data: {
+          title: template.title,
+          description: template.description,
+          position: i,
+          priority: template.priority,
+          dueDate: new Date(Date.now() + 86400000 * (i + 2)),
+          columnId: col.id,
+          assigneeId: assignee.id
+        }
+      });
     }
-  ];
-
-  for (const t of tasksData) {
-    await prisma.task.create({
-      data: t
-    });
   }
   console.log('Seeded tasks successfully.');
 }
